@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "vybra",
+  "compatibility_date": "2026-10-16",
+  "assets": {
+    "directory": "./apps/client/build",
+    "not_found_handling": "single-page-application"
+  }
+}
