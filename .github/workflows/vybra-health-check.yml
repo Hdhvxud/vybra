@@ -1,0 +1,105 @@
+name: VYBRA health check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - deploy/free-hosting-setup
+  schedule:
+    - cron: "17,47 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vybra-health-check
+  cancel-in-progress: true
+
+jobs:
+  health-check:
+    name: Check frontend and Render API endpoints
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check DNS and HTTPS endpoints
+        shell: bash
+        run: |
+          set -uo pipefail
+          REPORT="$GITHUB_WORKSPACE/vybra-health-report.txt"
+          FAILED=0
+
+          {
+            echo "VYBRA health check"
+            echo "UTC time: $(date -u '+%Y-%m-%d %H:%M:%S')"
+            echo "Runner: $RUNNER_OS"
+            echo
+          } | tee "$REPORT"
+
+          check_endpoint() {
+            local url="$1"
+            local host
+            local dns_output
+            local http_code
+            local curl_error
+            local curl_status
+
+            host="${url#https://}"
+            host="${host%%/*}"
+
+            echo "==================================================" | tee -a "$REPORT"
+            echo "URL: $url" | tee -a "$REPORT"
+            echo "-- DNS lookup ($host) --" | tee -a "$REPORT"
+
+            dns_output="$(getent ahosts "$host" 2>&1)"
+            if [ $? -ne 0 ] || [ -z "$dns_output" ]; then
+              echo "FAIL: hostname did not resolve using the GitHub runner's DNS." | tee -a "$REPORT"
+              echo "$dns_output" | tee -a "$REPORT"
+              FAILED=1
+              return
+            fi
+            echo "$dns_output" | awk '!seen[$1]++ {print $1}' | tee -a "$REPORT"
+
+            echo "-- HTTPS request --" | tee -a "$REPORT"
+            curl_error="$(mktemp)"
+            http_code="$(curl --silent --show-error --location --max-time 25 \
+              --output /dev/null --write-out '%{http_code}' "$url" 2>"$curl_error")"
+            curl_status=$?
+
+            if [ "$curl_status" -ne 0 ]; then
+              echo "FAIL: curl exited with code $curl_status." | tee -a "$REPORT"
+              cat "$curl_error" | tee -a "$REPORT"
+              FAILED=1
+            else
+              echo "HTTP status: $http_code" | tee -a "$REPORT"
+              if [[ "$http_code" =~ ^5[0-9][0-9]$ ]]; then
+                echo "FAIL: server returned an HTTP 5xx error." | tee -a "$REPORT"
+                FAILED=1
+              else
+                echo "PASS: endpoint returned an HTTP response (4xx is treated as reachable)." | tee -a "$REPORT"
+              fi
+            fi
+            rm -f "$curl_error"
+            echo | tee -a "$REPORT"
+          }
+
+          check_endpoint "https://your-spotify-api.onrender.com/"
+          check_endpoint "https://vybra.onrender.com/"
+          check_endpoint "https://vibra.vybrapp.workers.dev/"
+
+          echo "==================================================" | tee -a "$REPORT"
+          if [ "$FAILED" -ne 0 ]; then
+            echo "RESULT: FAILED — inspect the DNS/HTTPS details above." | tee -a "$REPORT"
+            exit 1
+          fi
+
+          echo "RESULT: PASS — all endpoints resolved and returned without transport errors or HTTP 5xx." | tee -a "$REPORT"
+
+      - name: Upload diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vybra-health-report
+          path: vybra-health-report.txt
+          if-no-files-found: warn
+          retention-days: 14
