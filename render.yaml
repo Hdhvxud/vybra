@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: your-spotify-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.server.production
+    dockerContext: .
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_ENDPOINT
+        sync: false
+      - key: CLIENT_ENDPOINT
+        sync: false
+      - key: SPOTIFY_PUBLIC
+        sync: false
+      - key: SPOTIFY_SECRET
+        sync: false
+      - key: MONGO_ENDPOINT
+        sync: false

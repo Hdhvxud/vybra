@@ -9,34 +9,28 @@
     be a good way to do this in the react dev environment, so it is set here as
     a meta tag. Note that frame-ancestors CANNOT be set in the meta tag and
     MUST be set as a HTTP header in production!
-
-    Restricting connect-src is done at start of the client server.
     -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.spotifycdn.com https://*.scdn.co; connect-src 'self' http://127.0.0.1:8080/;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.spotifycdn.com https://*.scdn.co; connect-src 'self' https://vybra.onrender.com;" />
 
   <link rel="icon" href="<%= assetPrefix %>/favicon.ico" />
   <link rel="apple-touch-icon" href="<%= assetPrefix %>/logo192.png" />
   <link rel="manifest" href="<%= assetPrefix %>/manifest.json" crossorigin="use-credentials" />
   <script src="<%= assetPrefix %>/variables.js"></script>
 
-  <title>Your Spotify</title>
+  <title>VYBRA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
 
-  <meta name="title" content="Your Spotify">
-  <meta name="description" content="Keep track of your Spotify listening habits with Your Spotify.">
+  <meta name="title" content="VYBRA">
+  <meta name="description" content="Your personal Spotify listening dashboard.">
 
   <meta property="og:type" content="image/png">
-  <meta property="og:title" content="Your Spotify">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="628">
-  <meta property="og:description" content="Keep track of your Spotify listening habits with Your Spotify.">
-  <meta property="og:image" content="http://127.0.0.1:8080/static/your_spotify_1200.png">
+  <meta property="og:title" content="VYBRA">
+  <meta property="og:description" content="Your personal Spotify listening dashboard.">
 
-  <meta property="twitter:card" content="summary">
-  <meta property="twitter:title" content="Your Spotify">
-  <meta property="twitter:description" content="Keep track of your Spotify listening habits with Your Spotify.">
-  <meta property="twitter:image" content="http://127.0.0.1:8080/static/your_spotify_1200.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="VYBRA">
+  <meta name="twitter:description" content="Your personal Spotify listening dashboard.">
 </head>
 
 <body>
